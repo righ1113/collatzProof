@@ -31,8 +31,8 @@ postulate
   LEM : (P : Set) → (P ∨ ¬ P)
   smaller : ℕ → Set
   -- n:左端からの連続するビット1
-  -- n+1で小さくならない→nで小さくならない
-  lemma1-3 : (n : ℕ) → ¬ (smaller (suc n)) → ¬ (smaller n)
+  -- k+2で小さくならない→k+1で小さくならない
+  lemma1-3 : (k : ℕ) → ¬ (smaller (suc (suc k))) → ¬ (smaller (suc k))
   lemma2   : smaller 0 -- evenは小さくなる
   lemma3   : smaller 1 -- 4x+1は小さくなる
 
@@ -63,8 +63,8 @@ contraposition2 p a =
 proof : (n : ℕ) → smaller n
 proof zero          = lemma2 -- even
 proof (suc zero)    = lemma3 -- 4x+1
-proof (suc (suc n)) = part (suc n) (proof (suc n))
+proof (suc (suc n)) = part n (proof (suc n))
   where
-    -- （n+1で小さくならない→nで小さくならない）→（nで小さくなる→n+1で小さくなる）
-    part : (n : ℕ) → smaller n → smaller (suc n)
-    part n = contraposition2 (lemma1-3 n)
+    -- （k+2で小さくならない→k+1で小さくならない）→（k+1で小さくなる→k+2で小さくなる）
+    part : (k : ℕ) → smaller (suc k) → smaller (suc (suc k))
+    part k = contraposition2 (lemma1-3 k)
