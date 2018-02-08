@@ -15,15 +15,9 @@ data _∨_ (P Q : Set) : Set where
 ∨Elim (∨Intro1 a) prfP _ = prfP a
 ∨Elim (∨Intro2 b) _ prfQ = prfQ b
 
--- 含意
-data _⊃_ (P Q : Set) : Set where
-  ⊃Intro : (P → Q) → P ⊃ Q
-⊃Elim : {P Q : Set} → P ⊃ Q → P → Q
-⊃Elim (⊃Intro x) q = x q
- 
 -- 否定
 ¬ : Set → Set
-¬ p = p ⊃ ⊥
+¬ p = p → ⊥
 ⊥Elim : {P : Set} → ⊥ → P
 ⊥Elim ()
 
@@ -36,27 +30,18 @@ postulate
   lemma2   : smaller 0 -- evenは小さくなる
   lemma3   : smaller 1 -- 4x+1は小さくなる
 
--- 三段論法
-syllogism : {A B C : Set} → (A → B) → (B → C) → (A → C)
-syllogism x y z = y (x z)
-
--- 対偶1
-contraposition : {A B : Set} → (A → B) → (¬ B → ¬ A)
-contraposition = λ x x₁ →
-  let z = ⊃Elim x₁ ; y = syllogism x z in ⊃Intro y
-
 -- 二重否定除去
-DNE : (P : Set) → ¬ (¬ P) ⊃ P
-DNE p = ⊃Intro (λ x → ∨Elim (LEM p) (λ y → y) (λ z → ⊥Elim (⊃Elim x z)))
-DNE2 : {p : Set} → p → ¬ (¬ p)
-DNE2 p  = ⊃Intro λ x → let y = ⊃Elim x in y p
-DNE3 : {p : Set} → ¬ (¬ p) → p
-DNE3 {p0} p1 = let f = ⊃Elim (DNE p0) in f p1
+DNE1 : {p : Set} → p → ¬ (¬ p)
+DNE1 p q = q p
+DNE2 : {p : Set} → ¬ (¬ p) → p
+DNE2 {p0} p1 = ∨Elim (LEM p0) (λ y → y) (λ z → ⊥Elim (p1 z))
 
--- 対偶2
+-- 対偶
+contraposition : {A B : Set} → (A → B) → (¬ B → ¬ A)
+contraposition = λ f g x → g (f x)
 contraposition2 : {A B : Set} → (¬ B → ¬ A) → (A → B)
 contraposition2 p a =
-  let t = (contraposition p) (DNE2 a) in DNE3 t
+  let t = (contraposition p) (DNE1 a) in DNE2 t
 
 -- 本論
 -- n:最下位からの連続するビット1
@@ -68,3 +53,6 @@ proof (suc (suc n)) = part n (proof (suc n))
     -- （k+2で小さくならない→k+1で小さくならない）→（k+1で小さくなる→k+2で小さくなる）
     part : (k : ℕ) → smaller (suc k) → smaller (suc (suc k))
     part k = contraposition2 (lemma1-3 k)
+
+
+
